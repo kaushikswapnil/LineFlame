@@ -9,7 +9,7 @@ class Layer
       
    Line(PVector startPos, float initPhase, float minLength, float maxLength)
    {
-      m_StartPos = startPos.copy();
+      m_StartPos = startPos.get();
       m_Phase = initPhase;
       m_MinLength = minLength;
       m_MaxLength = maxLength;
@@ -71,7 +71,7 @@ class Layer
  
  Layer(PVector layerCol, int lineCount, float minLineLength, float maxLineLength, float alpha, int cycleLength)
  {
-   m_Color = layerCol.copy();
+   m_Color = layerCol.get();
    m_MinLineHeight = minLineLength;
    m_MaxLineHeight = maxLineLength;
    m_Alpha = alpha;
