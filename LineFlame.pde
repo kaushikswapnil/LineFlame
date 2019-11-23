@@ -23,7 +23,7 @@ void setup()
 
 void draw()
 {
-  background(44, 0, 0);
+  background(54, 0, 0);
   strokeWeight(3.f);
   
   for (Layer layer : g_FlameLayers)
