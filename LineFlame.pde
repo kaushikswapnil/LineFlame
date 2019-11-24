@@ -1,12 +1,12 @@
 PVector g_LineDir = new PVector(0, -1);
 PVector g_Center;
-float g_FlameRadii = 100.0f;
+float g_FlameRadii = 130.0f;
 
 ArrayList<Layer> g_FlameLayers;
 
 void setup()
 {
-  size(800, 800);
+  size(800, 1200);
   
   g_Center = new PVector(width/2, (height/2) + 150.0f);
   
