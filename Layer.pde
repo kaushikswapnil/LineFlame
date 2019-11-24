@@ -2,10 +2,104 @@ class Layer
 {
  class Line
  {
+   class Particle
+   {
+      PVector m_Position;
+      PVector m_Acceleration, m_Velocity;
+      
+      Particle(PVector position)
+      {
+       m_Position = position.get();
+       m_Acceleration = new PVector();
+       m_Velocity = new PVector();
+      }
+      
+      void Display()
+      {
+        ellipse(m_Position.x, m_Position.y, 4, 4);
+      }
+      
+      void Update()
+      {
+        //AddGravity();
+        AddMagForce();
+        AddCapsuleDistanceForce();
+        
+        PhysicsStep();        
+      }
+      
+      void PhysicsStep()
+      {
+        m_Velocity.add(m_Acceleration);
+        m_Position.add(m_Velocity);
+        
+        m_Acceleration.mult(0.0f);
+      }
+      
+      void AddAcceleration(PVector acc)
+      {
+        m_Acceleration.add(acc);
+      }
+      
+      void AddGravity()
+      {
+        AddAcceleration(g_Gravity);
+      }
+      
+      void AddMagForce()
+      {
+        PVector diameterPoint = new PVector(m_Position.x, g_CeilingDomeCenter.y);
+        
+        float distToDiameterPoint = diameterPoint.dist(m_Position);
+        if (distToDiameterPoint < 10 || diameterPoint.y > m_Position.y)
+        {
+           distToDiameterPoint = 10.0f;
+        }
+        
+        PVector magForce = PVector.mult(g_LineDir, g_PointMagFactor/distToDiameterPoint);
+        
+        if (diameterPoint.y > m_Position.y)
+        {
+           magForce.mult(-1.0f); 
+        }
+        
+        AddAcceleration(magForce);
+      }
+      
+      void AddCapsuleDistanceForce()
+      {
+         if (m_Position.y <= g_CeilingDomeCenter.y)
+         {
+          float distToCapsulePoint = m_Position.dist(g_CeilingDomeCenter);
+          if (distToCapsulePoint >= g_FlameRadii)
+          {
+             PVector relDir = PVector.sub(m_Position, g_CeilingDomeCenter);
+             relDir.normalize();
+             
+             float velInDirMag = PVector.dot(m_Velocity, relDir);
+             if (velInDirMag >= 0.0f)
+             {
+                PVector constraintVelocityForce = PVector.mult(relDir, -velInDirMag);
+                AddAcceleration(constraintVelocityForce);
+             }
+             
+             float forceInDirMag = PVector.dot(m_Acceleration, relDir);
+             if (forceInDirMag >= 0.0f)
+             {
+                PVector constraintForceForce = PVector.mult(relDir, -forceInDirMag);
+                AddAcceleration(constraintForceForce);
+             }
+          }
+         }
+      }
+   }
+   
    PVector m_StartPos;
    float m_Phase;   
    float m_MinLength, m_MaxLength;
    boolean m_Growing;
+   
+   Particle m_Particle;
       
    Line(PVector startPos, float initPhase, float minLength, float maxLength)
    {
@@ -22,17 +116,45 @@ class Layer
       {
         m_Growing = false;
       }
+      
+      PVector partPos = PVector.add(m_StartPos, PVector.mult(g_LineDir, GetLineLength() + 20.0f));
+      m_Particle = new Particle(partPos);
+   }
+   
+   void Update()
+   {
+      PVector endPoint = GetLineEndPoint();
+      PVector partPos = m_Particle.m_Position;
+      
+      float dist = partPos.dist(endPoint);
+      float idealDist = 20.0f;
+      
+      float distDiff = dist - idealDist;
+      
+      PVector acc = PVector.mult(g_LineDir, -distDiff*g_PointLineSpringFactor);
+      m_Particle.AddAcceleration(acc);
+      
+      m_Particle.Update();
    }
    
    void Display()
    {
-      float lineLength = map(m_Phase, 0.0f, 1.0f, m_MinLength, m_MaxLength);
-      PVector endPos = PVector.add(m_StartPos, PVector.mult(g_LineDir, lineLength));
+      PVector endPos = GetLineEndPoint();
       line(m_StartPos.x ,m_StartPos.y, endPos.x, endPos.y);
       
-      float pointDist = lineLength + 20.0f;
-      PVector pointPos = PVector.add(m_StartPos, PVector.mult(g_LineDir, pointDist));
-      ellipse(pointPos.x, pointPos.y, 4, 4);
+      m_Particle.Display();      
+   }
+   
+   float GetLineLength()
+   {
+     float lineLength = map(m_Phase, 0.0f, 1.0f, m_MinLength, m_MaxLength);
+     return lineLength;
+   }
+   
+   PVector GetLineEndPoint()
+   {
+     PVector endPos = PVector.add(m_StartPos, PVector.mult(g_LineDir, GetLineLength()));
+     return endPos;
    }
    
    void GrowPhase(float phaseChange)
@@ -132,6 +254,7 @@ class Layer
    for (Line line : m_Lines)
    {
      line.GrowPhase(phaseChange);
+     line.Update();
    }
  }
 }
