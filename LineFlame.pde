@@ -4,7 +4,9 @@ PVector g_CeilingDomeCenter;
 float g_FlameRadii = 115.0f;
 PVector g_Gravity = new PVector(0, 1);
 float g_PointLineSpringFactor = 1.0f;
-float g_PointMagFactor = 550.0f;
+float g_MaxSpringForce = 20.0f;
+float g_PointMagFactor = 2000.0f;
+float g_MaxMagForce = 20.0f;
 
 ArrayList<Layer> g_FlameLayers;
 

@@ -21,7 +21,7 @@ class Layer
       
       void Update()
       {
-        //AddGravity();
+        AddGravity();
         AddMagForce();
         AddCapsuleDistanceForce();
         
@@ -61,6 +61,13 @@ class Layer
         if (diameterPoint.y > m_Position.y)
         {
            magForce.mult(-1.0f); 
+        }
+        
+        float magForceMag = magForce.mag();
+        if (magForceMag > g_MaxMagForce)
+        {
+          magForce.normalize();
+          magForce.mult(g_MaxMagForce);
         }
         
         AddAcceleration(magForce);
@@ -132,6 +139,12 @@ class Layer
       float distDiff = dist - idealDist;
       
       PVector acc = PVector.mult(g_LineDir, -distDiff*g_PointLineSpringFactor);
+      if (acc.mag() > g_MaxSpringForce)
+      {
+         acc.normalize();
+         acc.mult(g_MaxSpringForce);
+      }
+      
       m_Particle.AddAcceleration(acc);
       
       m_Particle.Update();
