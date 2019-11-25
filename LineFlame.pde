@@ -1,12 +1,12 @@
 PVector g_LineDir = new PVector(0, -1);
 PVector g_Center;
 PVector g_CeilingDomeCenter;
-float g_FlameRadii = 115.0f;
+float g_FlameRadii = 140.0f;
 PVector g_Gravity = new PVector(0, 1);
 float g_PointLineSpringFactor = 1.0f;
-float g_MaxSpringForce = 20.0f;
-float g_PointMagFactor = 2000.0f;
-float g_MaxMagForce = 20.0f;
+float g_MaxSpringForce = 1.0f;
+float g_PointMagFactor = 10000.0f;
+float g_MaxMagForce = 1.5f;
 
 ArrayList<Layer> g_FlameLayers;
 
@@ -39,5 +39,5 @@ void draw()
    layer.Display();
   }
   
-  ellipse(g_CeilingDomeCenter.x, g_CeilingDomeCenter.y, 5, 5);
+  //ellipse(g_CeilingDomeCenter.x, g_CeilingDomeCenter.y, 5, 5);
 }

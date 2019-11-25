@@ -24,6 +24,7 @@ class Layer
         AddGravity();
         AddMagForce();
         AddCapsuleDistanceForce();
+        AddAxisConstraintForce();
         
         PhysicsStep();        
       }
@@ -53,6 +54,7 @@ class Layer
         float distToDiameterPoint = diameterPoint.dist(m_Position);
         if (distToDiameterPoint < 10 || diameterPoint.y > m_Position.y)
         {
+           //return;
            distToDiameterPoint = 10.0f;
         }
         
@@ -98,6 +100,35 @@ class Layer
              }
           }
          }
+         else if (m_Position.y >= g_Center.y)
+         {
+           float distToCapsulePoint = m_Position.dist(g_Center);
+            if (distToCapsulePoint >= g_FlameRadii)
+            {
+               PVector relDir = PVector.sub(m_Position, g_CeilingDomeCenter);
+               relDir.normalize();
+               
+               float velInDirMag = PVector.dot(m_Velocity, relDir);
+               if (velInDirMag >= 0.0f)
+               {
+                  PVector constraintVelocityForce = PVector.mult(relDir, -velInDirMag);
+                  AddAcceleration(constraintVelocityForce);
+               }
+               
+               float forceInDirMag = PVector.dot(m_Acceleration, relDir);
+               if (forceInDirMag >= 0.0f)
+               {
+                  PVector constraintForceForce = PVector.mult(relDir, -forceInDirMag);
+                  AddAcceleration(constraintForceForce);
+               }
+            }
+         }
+      }
+      
+      void AddAxisConstraintForce()
+      {       
+        m_Velocity.x = 0.0f;
+        m_Acceleration.x = 0.0f;
       }
    }
    
