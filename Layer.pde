@@ -6,12 +6,14 @@ class Layer
    {
       PVector m_Position;
       PVector m_Acceleration, m_Velocity;
+      Line m_Parent;
       
-      Particle(PVector position)
+      Particle(PVector position, Line parent)
       {
        m_Position = position.get();
        m_Acceleration = new PVector();
        m_Velocity = new PVector();
+       m_Parent = parent;
       }
       
       void Display()
@@ -21,10 +23,10 @@ class Layer
       
       void Update()
       {
-        AddGravity();
-        AddMagForce();
-        AddCapsuleDistanceForce();
-        AddAxisConstraintForce();
+        //AddGravity();
+        //AddMagForce();
+        //AddCapsuleDistanceForce();
+        //AddAxisConstraintForce();
         
         PhysicsStep();        
       }
@@ -130,6 +132,27 @@ class Layer
         m_Velocity.x = 0.0f;
         m_Acceleration.x = 0.0f;
       }
+      
+      void AddLineDistanceConstraint()
+      {
+       PVector lineEndPoint = m_Parent.GetLineEndPoint();
+       
+       float idealDist = 20.0f;
+       PVector desiredPoint = PVector.add(lineEndPoint, PVector.mult(g_LineDir, idealDist));
+       
+       if (m_Position.y > desiredPoint.y)
+       {
+         PVector relDisp = PVector.sub(m_Position, desiredPoint);
+         PVector relDir = relDisp.get();
+         relDir.normalize();
+         
+         float dotProdWithRelDir = m_Velocity.dot(relDir);
+         if(dotProdWithRelDir <= 1.0f)
+         {
+           
+         }
+       }
+      }
    }
    
    PVector m_StartPos;
@@ -138,13 +161,16 @@ class Layer
    boolean m_Growing;
    
    Particle m_Particle;
+   
+   Layer m_Parent;
       
-   Line(PVector startPos, float initPhase, float minLength, float maxLength)
+   Line(PVector startPos, float initPhase, float minLength, float maxLength, Layer parent)
    {
       m_StartPos = startPos.get();
       m_Phase = initPhase;
       m_MinLength = minLength;
       m_MaxLength = maxLength;
+      m_Parent = parent;
       
       if (random(1.0f) < 0.5f)
       {
@@ -156,28 +182,11 @@ class Layer
       }
       
       PVector partPos = PVector.add(m_StartPos, PVector.mult(g_LineDir, GetLineLength() + 20.0f));
-      m_Particle = new Particle(partPos);
+      m_Particle = new Particle(partPos, this);
    }
    
    void Update()
-   {
-      PVector endPoint = GetLineEndPoint();
-      PVector partPos = m_Particle.m_Position;
-      
-      float dist = partPos.dist(endPoint);
-      float idealDist = 20.0f;
-      
-      float distDiff = dist - idealDist;
-      
-      PVector acc = PVector.mult(g_LineDir, -distDiff*g_PointLineSpringFactor);
-      if (acc.mag() > g_MaxSpringForce)
-      {
-         acc.normalize();
-         acc.mult(g_MaxSpringForce);
-      }
-      
-      m_Particle.AddAcceleration(acc);
-      
+   {      
       m_Particle.Update();
    }
    
@@ -276,7 +285,7 @@ class Layer
       float minLength = m_MinLineHeight;// + heightProjectedOnFlameDir;
       float maxLength = m_MaxLineHeight;// + heightProjectedOnFlameDir;
       
-      m_Lines.add(new Line(startPos, random(0.0f, 1.0f), minLength, maxLength));
+      m_Lines.add(new Line(startPos, random(0.0f, 1.0f), minLength, maxLength, this));
       
       theta += angIncrement;
    }
